@@ -78,4 +78,5 @@ func StartClient() {
 
 	// 输出结果
 	fmt.Printf("%+v\n", client)
+	log.Println(client)
 }
