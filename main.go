@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
 	"log"
 	"testhttp/client"
 	dbs "testhttp/db"
@@ -26,14 +26,16 @@ func main() {
 	defer db.Close()
 
 	// 获取一个 client 实例
-	client, err := client.GetClientInfo()
+	client, _ := client.GetClientInfo()
+
+	// 将 client 转换为 JSON 字符串
+	jsonData, err := json.Marshal(client)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// 将 client 保存到数据库中
-
-	err = dbs.SaveClient(db, &client)
+	// 将 JSON 字符串保存到数据库中
+	err = dbs.SaveClient(db, client.IP, jsonData)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -45,5 +47,5 @@ func main() {
 	}
 
 	// 输出 client 的信息
-	fmt.Printf("%+v\n", result)
+	log.Printf("%+v\n", result)
 }
