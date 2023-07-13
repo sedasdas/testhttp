@@ -138,6 +138,6 @@ func getClientInfo() *Client {
 		log.Println(err)
 	}
 	client.Mem = strings.TrimSpace(string(out))
-
+	fmt.Println(client)
 	return client
 }
