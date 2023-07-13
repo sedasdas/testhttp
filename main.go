@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"testhttp/client"
 	dbs "testhttp/db"
 	"testhttp/server"
 )
@@ -23,6 +24,7 @@ func main() {
 		log.Fatal(err)
 	}
 	defer db.Close()
+	go client.StartClient()
 	server.StartServer(db)
 
 }
