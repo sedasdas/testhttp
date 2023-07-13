@@ -21,21 +21,21 @@ type Client struct {
 	Mem        string
 }
 
-func StartClient() {
+func StartClient(serveraddr string) {
 
 	// 每隔一分钟发送客户端信息
 	tick := time.Tick(time.Minute)
 	for range tick {
 		client, _ := GetClientInfo()
 		// 将客户端信息发送到服务端的新增 client 的 API
-		err := addClient(&client)
+		err := addClient(&client, serveraddr)
 		if err != nil {
 			log.Printf("Failed to add client: %v", err)
 		}
 	}
 }
 
-func addClient(client *Client) error {
+func addClient(client *Client, serveraddr string) error {
 	// 将客户端信息转换为 JSON 格式
 	clientJSON, err := json.Marshal(client)
 	if err != nil {
@@ -43,7 +43,8 @@ func addClient(client *Client) error {
 	}
 
 	// 发送 HTTP POST 请求到服务端的新增 client 的 API
-	resp, err := http.Post("http://localhost:8080/client", "application/json", bytes.NewBuffer(clientJSON))
+
+	resp, err := http.Post("http://"+serveraddr+"/client", "application/json", bytes.NewBuffer(clientJSON))
 	if err != nil {
 		return err
 	}

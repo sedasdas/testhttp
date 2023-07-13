@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"testhttp/client"
 	dbs "testhttp/db"
@@ -18,13 +19,25 @@ type Client struct {
 }
 
 func main() {
-	// 打开数据库
-	db, err := dbs.OpenDB("barger.db")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-	go client.StartClient()
-	server.StartServer(db)
 
+	var serverAddr string
+	var isClient bool
+
+	flag.StringVar(&serverAddr, "server", "", "server address")
+	flag.BoolVar(&isClient, "client", false, "run as client")
+	flag.Parse()
+
+	if isClient {
+		client.StartClient(serverAddr)
+	} else {
+		// 打开数据库
+		db, err := dbs.OpenDB("barger.db")
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer db.Close()
+
+		server.StartServer(db)
+
+	}
 }
