@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/gob"
 	"fmt"
 	"log"
 	"os/exec"
@@ -23,7 +25,7 @@ func main() {
 	// 打开数据库
 	db, err := badger.Open(badger.DefaultOptions("barger.db"))
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	defer db.Close()
 
@@ -32,10 +34,10 @@ func main() {
 
 	// 将 client 保存到数据库中
 	err = db.Update(func(txn *badger.Txn) error {
-		return txn.Set([]byte(client.IP), encode(client))
+		return txn.Set([]byte(client.IP), encode(&client))
 	})
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	// 从数据库中获取 client
@@ -52,7 +54,7 @@ func main() {
 		return err
 	})
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	// 输出 client 的信息
@@ -61,27 +63,36 @@ func main() {
 
 // 将 Client 结构体转换为字节数组
 func encode(client *Client) []byte {
-	// 这里可以使用任意一种序列化方式，比如 json、gob、protobuf 等
-	return []byte(client.IP + "\n" + client.DiskInfo + "\n" + client.Driver + "\n" + client.CPU + "\n" + client.Card + "\n" + client.SystemInfo + "\n" + client.Mem)
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+
+	// 将 client 编码为字节序列
+	err := enc.Encode(client)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return buf.Bytes()
 }
 
 // 将字节数组转换为 Client 结构体
 func decode(data []byte) Client {
-	client := Client{}
-	fields := strings.Split(string(data), "\n")
-	client.IP = fields[0]
-	client.DiskInfo = fields[1]
-	client.Driver = fields[2]
-	client.CPU = fields[3]
-	client.Card = fields[4]
-	client.SystemInfo = fields[5]
-	client.Mem = fields[6]
+	var client Client
+
+	// 将字节序列解码为 client 结构体
+	buf := bytes.NewBuffer(data)
+	dec := gob.NewDecoder(buf)
+	err := dec.Decode(&client)
+	if err != nil {
+		log.Println(err)
+	}
+
 	return client
 }
 
 // 获取 client 信息
-func getClientInfo() *Client {
-	client := &Client{}
+func getClientInfo() Client {
+	client := Client{}
 
 	// 执行 ip 命令
 	cmd := exec.Command("bash", "-c", "ip a | grep inet | grep -v inet6 | awk -F 'inet ' '{print $2}' | awk -F '/' '{print $1}' | grep 10")
@@ -138,6 +149,6 @@ func getClientInfo() *Client {
 		log.Println(err)
 	}
 	client.Mem = strings.TrimSpace(string(out))
-	fmt.Println(client)
+
 	return client
 }
