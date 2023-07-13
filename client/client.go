@@ -43,7 +43,7 @@ func addClient(client *Client) error {
 	}
 
 	// 发送 HTTP POST 请求到服务端的新增 client 的 API
-	resp, err := http.Post("http://localhost:8080/clients", "application/json", bytes.NewBuffer(clientJSON))
+	resp, err := http.Post("http://localhost:8080/client", "application/json", bytes.NewBuffer(clientJSON))
 	if err != nil {
 		return err
 	}
