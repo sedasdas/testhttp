@@ -2,18 +2,18 @@ package server
 
 import (
 	"github.com/dgraph-io/badger/v3"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"testhttp/client"
 	dbs "testhttp/db"
-	"testhttp/middlewares"
 )
 
 func StartServer(db *badger.DB) {
 	// 创建 HTTP 服务器
 	router := gin.Default()
-	router.Use(middlewares.Cors())
+	router.Use(cors.Default())
 	// 查询一个 client
 	router.GET("/client/:ip", func(c *gin.Context) {
 		ip := c.Param("ip")
